@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948844024793",
+    "project_id": "relt-b4a97",
+    "storage_bucket": "relt-b4a97.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948844024793:android:98a6b78eb30995ac1e3fc8",
+        "android_client_info": {
+          "package_name": "com.example.relt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLt6uH-ScCDq7XVrwQbjOFDeBAKHiJFXI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
