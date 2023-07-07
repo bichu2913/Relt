@@ -1,14 +1,25 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:relt/components/heading.dart';
-
 import '../components/MyButton.dart';
 import '../components/MyTextField.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
   ForgotPasswordPage({Key? key}) : super(key: key);
 
-  void resetPassword() {
-    // Implement your reset password logic here
+  final TextEditingController emailController = TextEditingController();
+
+  void resetPassword(BuildContext context) async {
+    String email = emailController.text;
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      // Password reset email sent successfully, navigate to a success screen or show a success message
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context); // Pop back to login screen
+    } catch (e) {
+      // Handle password reset error or show an error message
+      print('Error resetting password: $e');
+    }
   }
 
   @override
@@ -21,12 +32,10 @@ class ForgotPasswordPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Column(
-               
                 children: [
-                  
                   const SizedBox(
                     height: 70,
-                    child:CustomHeading(text:"Forgot")
+                    child: CustomHeading(text: "Forgot"),
                   ),
                   const SizedBox(height: 50),
                   Text(
@@ -38,15 +47,16 @@ class ForgotPasswordPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 25),
                   MyTextField(
-                      controller: TextEditingController(),
-                      hintText: 'Email',
-                      obscureText: false, onChanged: (String value) {  },
-                    ),
+                    controller: emailController,
+                    hintText: 'Email',
+                    obscureText: false,
+                    onChanged: (String value) {},
+                  ),
                   const SizedBox(height: 25),
-                     MyButton(
-                onTap: resetPassword,
-                buttonText: 'Reset',
-              ),
+                  MyButton(
+                    onTap: () => resetPassword(context),
+                    buttonText: 'Reset',
+                  ),
                 ],
               ),
             ),

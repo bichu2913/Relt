@@ -1,21 +1,69 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:relt/Screen/forgotpassword.dart';
 import 'package:relt/Screen/signupscreen.dart';
+import 'package:relt/aunthetication/googleauth.dart';
 import 'package:relt/components/heading.dart';
 import 'package:relt/components/myTextField.dart';
 import 'package:relt/components/myButton.dart';
 
+import '../aunthetication/facebookauth.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({Key? key}) : super(key: key);
 
-  final TextEditingController usernameController = TextEditingController();
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+
   final TextEditingController passwordController = TextEditingController();
 
-  void signUserIn() {
-    // Implement your sign-in logic here
-    print('Sign In button tapped!');
+  
+
+void signUserIn() async {
+  try {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: emailController.text,
+      password: passwordController.text,
+    );
+  } on FirebaseAuthException catch (e) {
+    showErrorMessage(e.code);
   }
+}
+
+void showErrorMessage(String errorCode) {
+  String errorMessage;
+  if (errorCode == 'user-not-found') {
+    errorMessage = 'Incorrect Email';
+  } else if (errorCode == 'wrong-password') {
+    errorMessage = 'Incorrect Password';
+  } else {
+    errorMessage = 'An error occurred';
+  }
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: Colors.deepPurple,
+        title: Center(
+          child: Text(
+            errorMessage,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +90,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 25),
                 MyTextField(
-                  controller: usernameController,
+                  controller: emailController,
                   hintText: 'Username',
                   obscureText: false,
                   onChanged: (value) {
@@ -117,10 +165,10 @@ class LoginPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Google button
-                    Image.asset('assests/google.png', width: 50, height: 50),
+                    GestureDetector(child: Image.asset('assests/google.png', width: 50, height: 50),onTap: () => GoogleAuthentication().signInWithGoogle()),
                     const SizedBox(width: 25),
                     // Facebook button
-                    Image.asset('assests/facebook.png', width: 60, height: 60),
+                    GestureDetector(child: Image.asset('assests/facebook.png', width: 60, height: 60),onTap: () => FacebookLoginScreen().loginWithFacebook()),
                   ],
                 ),
                 const SizedBox(height: 50),
@@ -159,3 +207,4 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
+

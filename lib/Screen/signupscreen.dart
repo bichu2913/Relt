@@ -1,18 +1,113 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:relt/components/heading.dart';
 import 'package:relt/components/myTextField.dart';
 
 import '../components/MyButton.dart';
 
-class SignupPage extends StatelessWidget {
-  SignupPage({Key? key}) : super(key: key);
+class SignupPage extends StatefulWidget {
+  const SignupPage({Key? key}) : super(key: key);
 
-  void signUp() {
-    // Implement your sign-up logic here
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
+
+  final TextEditingController emailController = TextEditingController();
+
+  final TextEditingController passwordController = TextEditingController();
+
+  final TextEditingController confirmController = TextEditingController();
+
+void signUp() async {
+  if (passwordController.text == confirmController.text) {
+    try {
+      showDialog(
+        context: context,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+       FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text,
+        password: passwordController.text,
+        
+      );
+         // Set the user role field in Firestore
+    String userId = emailController.text;
+    await FirebaseFirestore.instance.collection('users').doc(userId).set({
+      'email': emailController.text,
+      'role': 'regular', // Set the default user role to "regular"
+    });
+      // Successful sign-up, navigate to the next screen or show a success message
+     Navigator.pop(context);
+     Navigator.popUntil(context, (route) => route.isFirst);
+     } 
+    on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
+      showErrorMessage(context, e.code);
+    } catch (e) {
+      Navigator.pop(context);
+      
+    }
+  } else {
+   
+    showErrorMessage(context, 'password-mismatch');
   }
+}
+
+void showErrorMessage(BuildContext context, String errorCode) {
+  String errorMessage;
+  if (errorCode == 'email-already-in-use') {
+    errorMessage = 'Email already in use';
+  } else if (errorCode == 'weak-password') {
+    errorMessage = 'Weak password';
+  } else if (errorCode == 'password-mismatch') {
+    errorMessage = 'Passwords do not match';
+  } else {
+    errorMessage = 'An error occurred';
+  }
+
+  showDialog(
+    context: context,
+    builder: (context) => buildErrorDialog(context, errorMessage),
+  );
+}
+
+AlertDialog buildErrorDialog(BuildContext context, String errorMessage) {
+  return AlertDialog(
+    backgroundColor: Colors.deepPurple,
+    title: const Center(
+      child: Text(
+        'Error',
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+    content: Text(
+      errorMessage,
+      style: const TextStyle(color: Colors.white),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text(
+          'OK',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    ],
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
+   
     return Scaffold(
       backgroundColor: Colors.grey[300],
       body: Center(
@@ -38,27 +133,22 @@ class SignupPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                 child: Column(
                   children: [
-                    MyTextField(
-                      controller: TextEditingController(),
-                      hintText: 'Full Name',
-                      obscureText: false, onChanged: (String value) {  },
-                      
-                    ),
+                  
                     const SizedBox(height: 10),
                     MyTextField(
-                      controller: TextEditingController(),
+                     controller: emailController,
                       hintText: 'Email',
                       obscureText: false, onChanged: (String value) {  },
                     ),
                     const SizedBox(height: 10),
                     MyTextField(
-                      controller: TextEditingController(),
+                      controller: passwordController,
                       hintText: 'Password',
                       obscureText: true, onChanged: (String value) {  },
                     ),
                     const SizedBox(height: 10),
                     MyTextField(
-                      controller: TextEditingController(),
+                      controller: confirmController,
                       hintText: 'Confirm Password',
                       obscureText: true, onChanged: (String value) {  },
                     ),
