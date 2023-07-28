@@ -26,15 +26,15 @@ class FacebookLoginScreen {
             'role': 'regular',
           });
 
-          print('Logged in with Facebook! User ID: ${user.uid}');
+        
         } else {
-          print('Failed to sign in with Facebook.');
+        
         }
       } else {
-        print('Facebook login failed');
+       
       }
     } catch (e) {
-      print('Error logging in with Facebook: $e');
+      [];
     }
   }
 }

@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:relt/Screen/loginscreen.dart';
-
-import '../Screen/buttomnavigation.dart';
+import '../view/loginscreen.dart';
+import '../view/bottom_navigation/buttomnavigation.dart';
 
 
 class AuthPage extends StatelessWidget {

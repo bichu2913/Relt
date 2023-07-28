@@ -37,7 +37,7 @@ class GoogleAuthentication {
          return userCredential;
       }
     } catch (e) {
-      print('Error signing in with Google: $e');
+     [];
     }
     return null;
   }

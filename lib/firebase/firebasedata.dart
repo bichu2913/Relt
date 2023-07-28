@@ -25,7 +25,7 @@ class FirebaseService {
 
       return snapshot.docs;
      
-    }
+    } 
   
    Future<List<DocumentSnapshot>> getWomenPants() async {
    
@@ -114,18 +114,17 @@ Future<List<DocumentSnapshot<Object?>>> getrecentalyData() async {
         if (userData != null && userData.containsKey('recentlyViewed')) {
           List<dynamic> recentlyViewed = userData['recentlyViewed'] as List<dynamic>;
 
-          print('recentlyViewed Length: ${recentlyViewed.length}');
+        
 
           List<DocumentSnapshot<Object?>> products =
               await getProducts();
 
-          print('All Products Length: ${products.length}');
+       
 
           List<DocumentSnapshot<Object?>> recentlyViewedProducts = products
               .where((product) => recentlyViewed.contains(product.id))
               .toList();
 
-          print('Filtered Products Length: ${recentlyViewed.length}');
 
           return recentlyViewedProducts;
         }
@@ -133,7 +132,7 @@ Future<List<DocumentSnapshot<Object?>>> getrecentalyData() async {
 
       return [];
     } catch (e) {
-      print('Error retrieving cart data: $e');
+      
       return [];
     }
   }
@@ -155,6 +154,113 @@ Future<List<DocumentSnapshot<Object?>>> getrecentalyData() async {
 
   return featuredDocs;
 }
+Future<DocumentSnapshot<Map<String, dynamic>>> getOrderData() async {
+    final User user = FirebaseAuth.instance.currentUser!;
+    final String? userId = user.email;
+
+    return FirebaseFirestore.instance.collection('orders').doc(userId).get();
+  }
+
+  Future<List<DocumentSnapshot>> getMatchingProducts(List<dynamic> productIds) async {
+    List<DocumentSnapshot> allDocs = await getProducts();
+
+    List<DocumentSnapshot> matchingProducts = [];
+
+    for (var productId in productIds) {
+      DocumentSnapshot? matchingProduct = allDocs.firstWhere((doc) => doc.id == productId, );
+      matchingProducts.add(matchingProduct);
+    }
+
+    return matchingProducts;
+  }
+Future<void> updateProduct(String productId, int newStock) async {
+  List<DocumentSnapshot> updatedProducts = await getMatchingProducts([productId]);
+
+  if (updatedProducts.isNotEmpty) {
+    DocumentSnapshot product = updatedProducts.first;
+
+    // Update the status field with the new value
+    await product.reference.update({'stock': newStock});
+
+    // Fetch the updated document snapshot
+    DocumentSnapshot updatedProduct = await product.reference.get();
+
+    // Retrieve the updated field value
+     int? updatedStatus = updatedProduct.get('stock') as int?;
+
+    // Do something with the updated status
+    if (updatedStatus != null) {
+     
+    }
+  } else {
+  
+  }
+}
+Future<void> updateProductStatus(String productId, String newStatus) async {
+  final User user = FirebaseAuth.instance.currentUser!;
+  final String? userId = user.email;
+  final DocumentReference orderRef = FirebaseFirestore.instance.collection('orders').doc(userId);
+
+   DocumentSnapshot<Map<String, dynamic>> orderSnapshot = await orderRef.get() as DocumentSnapshot<Map<String, dynamic>>;
+
+  if (orderSnapshot.exists) {
+    Map<String, dynamic>? orderData = orderSnapshot.data();
+    List<dynamic>? products = orderData?['products'] as List<dynamic>?;
+    
+    if (products != null) {
+      for (int i = 0; i < products.length; i++) {
+        String? currentProductId = products[i]['productId'] as String?;
+
+        if (currentProductId == productId) {
+          products[i]['status'] = newStatus;
+          break; // Exit the loop once the product is found and updated
+        }
+      }
+
+      await orderRef.update({'products': products});
+      
+    } else {
+       
+    }
+  } else {
+    
+  }
+}
+Future<void> saveRecentlyViewedProduct(productSnapshot) async {
+    final user = FirebaseAuth.instance.currentUser!;
+    String productId = productSnapshot.id;
+    DocumentReference userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.email);
+
+    try {
+      DocumentSnapshot userSnapshot = await userRef.get();
+      if (userSnapshot.exists) {
+        // User document exists
+        Map<String, dynamic> userData =
+            userSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> recentlyViewed = userData['recentlyViewed'] ?? [];
+        if (!recentlyViewed.contains(productId)) {
+          // Product ID does not exist in the array, update the field
+          recentlyViewed.add(productId);
+          await userRef
+              .update({'recentlyViewed': FieldValue.arrayUnion([productId])});
+        }
+      } else {
+        // User document does not exist, create it
+        await userRef.set({'recentlyViewed': [productId]});
+      }
+    } catch (error) {
+     [];
+    }
+  }
+  
+
+
+
+
+
+ 
+
 
 
 }
